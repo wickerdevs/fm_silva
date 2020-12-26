@@ -1,5 +1,5 @@
 import json, jsonpickle
-from template import PERSISTENCE_DIR
+from fmsilva import PERSISTENCE_DIR
 import os
 
 def persistence_decorator(func):

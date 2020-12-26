@@ -1,6 +1,6 @@
 from instaclient.client.instaclient import InstaClient
 from instaclient.errors.common import InvalidUserError, NotLoggedInError, PrivateAccountError
-from template.bot.commands import *
+from fmsilva.bot.commands import *
 
 @send_typing_action
 def follow_def(update, context):

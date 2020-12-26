@@ -1,6 +1,6 @@
-PERSISTENCE_DIR = 'template/config'
-CONFIG_DIR = 'template/config/config.json'
-CONFIG_FOLDER = 'template/config'
+PERSISTENCE_DIR = 'fmsilva/config'
+CONFIG_DIR = 'fmsilva/config/config.json'
+CONFIG_FOLDER = 'fmsilva/config'
 
 import os, logging
 
@@ -22,7 +22,7 @@ telelogger = logging.getLogger("telegram.bot")
 telelogger.setLevel(logging.INFO)
 
 def instaclient_error_callback(driver):
-    from template import telegram_bot as bot
+    from fmsilva import telegram_bot as bot
     driver.save_screenshot('error.png')
     bot.report_error('instaclient.__find_element() error.', send_screenshot=True, screenshot_name='error')
     os.remove('error.png')
@@ -35,7 +35,7 @@ if os.environ.get('PORT') not in (None, ""):
     LOCALHOST = False    
 
 # Initialize Bot
-from template.config import config
+from fmsilva.config import config
 BOT_TOKEN = config.get('BOT_TOKEN')
 URL = config.get('SERVER_APP_DOMAIN')
 PORT = int(os.environ.get('PORT', 5000))

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 from telegram.utils.helpers import mention_html
 import sys, traceback, json, logging, os, html, pickle
-from template.config import config
+from fmsilva.config import config
 
 telelogger = logging.getLogger('telegram.bot')
 

@@ -1,6 +1,6 @@
 from telegram import message
-from template.models.settings import Settings
-from template.bot.commands import *
+from fmsilva.models.settings import Settings
+from fmsilva.bot.commands import *
 
 @send_typing_action
 def settings_def(update:Update, context):

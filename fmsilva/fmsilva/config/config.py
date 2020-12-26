@@ -1,9 +1,9 @@
 import json, os
-from template.models.setting import Setting
-from template import CONFIG_DIR
+from fmsilva.models.setting import Setting
+from fmsilva import CONFIG_DIR
 from typing import Optional, Set, TYPE_CHECKING
 if TYPE_CHECKING:
-    from template.models.settings import Settings
+    from fmsilva.models.settings import Settings
 
 
 
@@ -46,7 +46,7 @@ def get_settings(user_id:int) -> Optional['Settings']:
     Returns:
         Setting or None: Setting matching `user_id` attribute
     """
-    from template.models.settings import Settings 
+    from fmsilva.models.settings import Settings 
     data:Optional['Settings'] = get(f'SETTINGS:{user_id}')
     if data:
         return Settings.de_json(data)

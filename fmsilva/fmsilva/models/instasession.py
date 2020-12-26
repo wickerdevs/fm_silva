@@ -1,7 +1,7 @@
-from template.models.persistence import persistence_decorator
-from template.config import config
-from template.bot.commands import *
-from template import *
+from fmsilva.models.persistence import persistence_decorator
+from fmsilva.config import config
+from fmsilva.bot.commands import *
+from fmsilva import *
 import os
 
 class InstaSession(Persistence):

@@ -1,4 +1,4 @@
-from template.bot.commands import *
+from fmsilva.bot.commands import *
 
 
 @send_typing_action

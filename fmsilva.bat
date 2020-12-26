@@ -4,14 +4,14 @@ python --version 2>NUL
 if errorlevel 1 goto errorNoPython
 
 :: Python is Installed
-CD localtemplate
+CD fmsilva
 if exist .env (pip install -r requirements.txt) else (python -m venv .env & call .env/Scripts/activate & pip install -r requirements.txt)
 
 set env=python.exe
 ::cd ozanbot
 call .env/Scripts/activate
 echo Activated Enviroment
-python template.py
+python fmsilva.py
 echo Started bot.
 
 PAUSE

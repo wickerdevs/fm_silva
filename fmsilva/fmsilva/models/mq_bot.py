@@ -1,6 +1,6 @@
-from template.config import config
+from fmsilva.config import config
 import telegram.bot
-from template import *
+from fmsilva import *
 from telegram.ext import messagequeue as mq 
 
 class MQBot(telegram.bot.Bot):

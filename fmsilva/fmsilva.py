@@ -1,8 +1,8 @@
-from template import applogger, telelogger, BOT_TOKEN
+from fmsilva import applogger, telelogger, BOT_TOKEN
 from telegram.ext.updater import Updater
 from telegram.ext.defaults import Defaults
 from telegram.utils.request import Request
-from template.models.mq_bot import MQBot
+from fmsilva.models.mq_bot import MQBot
 import telegram
 from telegram import ParseMode
 from telegram.ext import messagequeue as mq
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     
     # SET UP BOT COMMAND HANDLERS
     applogger.debug(f'Initiate setup')
-    from template.bot import setup
+    from fmsilva.bot import setup
     setup.setup(updater)
 
     # Start

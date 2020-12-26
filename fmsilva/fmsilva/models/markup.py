@@ -1,6 +1,6 @@
-from template.models.callbacks import Callbacks
-from template.bot.commands import *
-from template import *
+from fmsilva.models.callbacks import Callbacks
+from fmsilva.bot.commands import *
+from fmsilva import *
 
 class CreateMarkup():
     """

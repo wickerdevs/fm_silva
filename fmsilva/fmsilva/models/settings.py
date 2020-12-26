@@ -1,11 +1,11 @@
 from datetime import timedelta
-from template.models import interaction
-from template.models.interaction import Interaction
+from fmsilva.models import interaction
+from fmsilva.models.interaction import Interaction
 from typing import Dict, List, TYPE_CHECKING
-from template.models.setting import Setting
+from fmsilva.models.setting import Setting
 import jsonpickle, json
-from template.models.persistence import Persistence, persistence_decorator
-from template.config import config
+from fmsilva.models.persistence import Persistence, persistence_decorator
+from fmsilva.config import config
 import datetime
     
 

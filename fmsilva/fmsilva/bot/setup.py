@@ -1,16 +1,16 @@
 from logging import Filter
 
 from telegram import update
-from template import telelogger
-from template.bot.commands.login import *
-from template.bot.commands.help import *
-from template.bot.commands.logout import *
-from template.bot.commands.interact import *
-from template.bot.commands.account import *
-from template.bot.commands.start import *
-from template.bot.commands.incorrect import *
-from template.bot.commands.settings import * 
-from template.models.callbacks import *
+from fmsilva import telelogger
+from fmsilva.bot.commands.login import *
+from fmsilva.bot.commands.help import *
+from fmsilva.bot.commands.logout import *
+from fmsilva.bot.commands.interact import *
+from fmsilva.bot.commands.account import *
+from fmsilva.bot.commands.start import *
+from fmsilva.bot.commands.incorrect import *
+from fmsilva.bot.commands.settings import * 
+from fmsilva.models.callbacks import *
 
 
 def setup(updater):

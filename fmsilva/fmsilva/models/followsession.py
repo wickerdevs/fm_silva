@@ -1,7 +1,7 @@
 from typing import Optional
-from template.models.interaction import Interaction
-from template.models.persistence import Persistence, persistence_decorator
-from template.models.instasession import InstaSession
+from fmsilva.models.interaction import Interaction
+from fmsilva.models.persistence import Persistence, persistence_decorator
+from fmsilva.models.instasession import InstaSession
 import time
 
 

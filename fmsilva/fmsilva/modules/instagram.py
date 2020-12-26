@@ -2,20 +2,20 @@ from functools import wraps
 import logging
 
 from telegram.parsemode import ParseMode
-from template.models.interaction import Interaction
+from fmsilva.models.interaction import Interaction
 from sys import exc_info
-from template.models.settings import Settings
-from template.models.setting import Setting
-from template.models.followsession import FollowSession
-from template.config import config
-from template.texts import *
+from fmsilva.models.settings import Settings
+from fmsilva.models.setting import Setting
+from fmsilva.models.followsession import FollowSession
+from fmsilva.config import config
+from fmsilva.texts import *
 from typing import List, Optional, Tuple
-from template import CONFIG_DIR, CONFIG_FOLDER
+from fmsilva import CONFIG_DIR, CONFIG_FOLDER
 from instaclient.client.instaclient import InstaClient
 from instaclient.errors.common import FollowRequestSentError, InvaildPasswordError, InvalidUserError, PrivateAccountError, SuspisciousLoginAttemptError, VerificationCodeNecessary
 from instaclient.instagram.post import Post
-from template.models.instasession import InstaSession
-from template import applogger
+from fmsilva.models.instasession import InstaSession
+from fmsilva import applogger
 import os, multiprocessing
 
 instalogger = logging.getLogger('instaclient')
@@ -23,7 +23,7 @@ instalogger = logging.getLogger('instaclient')
 
 def insta_error_callback(driver):
     driver.save_screenshot('error.png')
-    from template import telegram_bot as bot, config # TODO
+    from fmsilva import telegram_bot as bot, config # TODO
     users_str = config.get('DEVS')
     if isinstance(users_str, str):
         users_str = users_str.replace('[', '')
@@ -48,7 +48,7 @@ def update_message(obj: FollowSession, text:str):
         message (str): The text to send via message
         message_id (int, optional): If this argument is defined, then the method will try to edit the message matching the `message_id` of the `obj`. Defaults to None.
     """
-    from template import telegram_bot as bot
+    from fmsilva import telegram_bot as bot
     message_id = config.get_message(obj.get_user_id())
     try:
         bot.delete_message(chat_id=obj.user_id, message_id=message_id)

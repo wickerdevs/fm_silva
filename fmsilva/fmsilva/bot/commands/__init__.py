@@ -1,15 +1,15 @@
-from template.config import config
-from template.bot import *
-from template.texts import *
-from template.models.callbacks import *
-from template.models.persistence import Persistence
-from template.models.instasession import InstaSession
-from template.models.followsession import FollowSession
-from template.models.settings import Settings
-from template.models.setting import Setting
-from template.models.callbacks import *
-from template.models.markup import CreateMarkup, MarkupDivider
-from template.modules import instagram
+from fmsilva.config import config
+from fmsilva.bot import *
+from fmsilva.texts import *
+from fmsilva.models.callbacks import *
+from fmsilva.models.persistence import Persistence
+from fmsilva.models.instasession import InstaSession
+from fmsilva.models.followsession import FollowSession
+from fmsilva.models.settings import Settings
+from fmsilva.models.setting import Setting
+from fmsilva.models.callbacks import *
+from fmsilva.models.markup import CreateMarkup, MarkupDivider
+from fmsilva.modules import instagram
 from telegram import InputMediaPhoto, InputFile, Update
 from telegram.ext import CallbackContext
 
