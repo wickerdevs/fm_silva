@@ -1,6 +1,7 @@
 PERSISTENCE_DIR = 'config/'
 CONFIG_DIR = 'config/config.json'
 CONFIG_FOLDER = 'config/'
+LOCALHEADLESS = False
 
 import os, logging
 from telegram.ext.updater import Updater

@@ -1,4 +1,6 @@
 from functools import wraps
+from random import randrange
+import time
 from telegram import update
 from telegram.parsemode import ParseMode
 from fmsilva.models.interaction import Interaction
@@ -13,7 +15,7 @@ from instaclient.client.instaclient import InstaClient
 from instaclient.errors.common import FollowRequestSentError, InvaildPasswordError, InvalidUserError, PrivateAccountError, SuspisciousLoginAttemptError, VerificationCodeNecessary
 from instaclient.instagram.post import Post
 from fmsilva.models.instasession import InstaSession
-from fmsilva import applogger, queue
+from fmsilva import applogger, queue, LOCALHEADLESS
 import os, multiprocessing, logging
 
 instalogger = logging.getLogger('instaclient')
@@ -65,7 +67,7 @@ def init_client():
     if os.environ.get('PORT') in (None, ""):
         client = InstaClient(driver_path=f'{CONFIG_FOLDER}chromedriver.exe', debug=True, error_callback=insta_error_callback, logger=instalogger, localhost_headless=True)
     else:
-        client = InstaClient(host_type=InstaClient.WEB_SERVER, debug=True, error_callback=insta_error_callback, logger=instalogger, localhost_headless=True)
+        client = InstaClient(host_type=InstaClient.WEB_SERVER, debug=True, error_callback=insta_error_callback, logger=instalogger, localhost_headless=LOCALHEADLESS)
     return client
 
 
@@ -86,10 +88,6 @@ def scrape_callback(scraped:List[str], session:InteractSession):
     update_message(session, scrape_followers_callback_text.format(len(scraped)))
 
 
-def enqueue_scrape(session:InteractSession):
-    queue.add_task(scrape_job, session=session)
-
-
 @error_proof
 def scrape_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]]:
     client = init_client()
@@ -106,7 +104,7 @@ def scrape_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]
 
     update_message(session, waiting_scrape_text)
     try:
-        followers = client.get_followers(session.target, session.count)
+        followers = client.get_followers(session.target, session.count, deep_scrape=False)
         session.set_scraped(followers)
         session.save_scraped()
         client.disconnect()
@@ -121,19 +119,18 @@ def scrape_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]
 def enqueue_dm(session:InteractSession):
     update_message(session, 'Enqueuing DMs...')
     result = interaction_job(session)
-
+    #queue.add_task(interaction_job, session)
 
 
 @error_proof
 def interaction_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]]:
-    settings:Settings = config.get_settings(session.user_id)
-    setting:Setting = settings.get_setting(session.username)
 
+    session.get_creds()
     # TODO: Scrape Users
     if not session.get_scraped():
         result = scrape_job(session)
-        if result[1]:
-            followers = result[2].get_scraped()
+        if result[0]:
+            followers = result[1].get_scraped()
         else:
             return (False, session)
     else:
@@ -161,10 +158,13 @@ def interaction_job(session:InteractSession) -> Tuple[bool, Optional[InteractSes
         try:
             client.send_dm(follower, session.get_text())
             session.add_messaged(follower)
+            if len(followers) > 25:
+                update_message(session, 'Waiting a bit...')
+                time.sleep(randrange(8, 20))
         except Exception as error:
             applogger.error(f'Error in sending message to <{follower}>', exc_info=error)
 
-    update_message(session, follow_successful_text.format(len(session.get_messaged())))
+    update_message(session, follow_successful_text.format(len(session.get_messaged()), session.target))
     client.disconnect()
     return (True, session)
 

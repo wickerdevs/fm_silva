@@ -24,7 +24,7 @@ def senddm_def(update, context):
     if scraped:
         # No Scraped Selection
         for item in scraped.keys():
-            markupk[item] = f'{item}\'s followers'
+            markupk[item] = f'{item}\'s followers ({len(scraped[item])})'
 
     markupk[InteractStates.SCRAPEACCOUNT] = 'Scrape another user'
     markupk[Callbacks.CANCEL] = 'Cancel'
@@ -55,13 +55,13 @@ def select_scrape(update, context):
     session.set_interaction(Interaction(data))
     session.set_scraped(config.get_scraped(data))
 
-    markup = CreateMarkup({
-        25: '25',
-        50: '50',
-        100: '100',
-        500: '500',
-        Callbacks.CANCEL: 'Cancel'
-    }).create_markup()
+    counts = [5, 25, 50, 100, 250, 400, 500]
+    markupk = dict()
+    for count in counts:
+        if len(session.get_scraped()) >= count:
+            markupk[count] = str(count)
+    markupk[Callbacks.CANCEL] = 'Cancel'
+    markup = CreateMarkup(markupk).create_markup()
     send_message(update, context, select_count_text, markup)
     return InteractStates.COUNT
 
@@ -92,6 +92,8 @@ def select_scrape_account(update, context):
         25: '25',
         50: '50',
         100: '100',
+        250: '250',
+        400: '400',
         500: '500',
         Callbacks.CANCEL: 'Cancel'
     }).create_markup()
