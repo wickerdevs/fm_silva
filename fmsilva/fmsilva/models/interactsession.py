@@ -1,15 +1,19 @@
-from typing import Optional
+from fmsilva.modules import config
+from typing import Optional, List
 from fmsilva.models.interaction import Interaction
 from fmsilva.models.persistence import Persistence, persistence_decorator
 from fmsilva.models.instasession import InstaSession
 import time
 
 
-class FollowSession(InstaSession):
-    def __init__(self, user_id:int, target:str=None, message_id:int=None, interaction:Optional[Interaction]=None) -> None:
-        super(InstaSession, self).__init__(method=Persistence.FOLLOW, user_id=user_id, message_id=message_id)
+class InteractSession(InstaSession):
+    def __init__(self, user_id:int, target:str=None, message_id:int=None, text:str=None, accounts: Optional[dict]=None, proxies:Optional[List[str]]=None, interaction:Optional[Interaction]=None) -> None:
+        super(InstaSession, self).__init__(method=Persistence.INTERACT, user_id=user_id, message_id=message_id)
         self.target = target
         self.count = 0
+        self.text = text
+        self.accounts = accounts
+        self.proxies = proxies
         self.interaction = interaction
 
     def __repr__(self) -> str:
@@ -26,10 +30,10 @@ class FollowSession(InstaSession):
             return list()
         return self.interaction.scraped.copy()
 
-    def get_followed(self):
-        if not self.interaction.followed:
+    def get_messaged(self):
+        if not self.interaction.messaged:
             return list()
-        return self.interaction.followed.copy()
+        return self.interaction.messaged.copy()
 
     def get_failed(self):
         if not self.interaction.failed:
@@ -49,30 +53,29 @@ class FollowSession(InstaSession):
         self.count = count
 
     @persistence_decorator
+    def set_text(self, text):
+        self.text = text
+
+    @persistence_decorator
+    def set_accounts(self, accounts:dict):
+        self.accounts = accounts
+
+    @persistence_decorator
+    def set_proxies(self, proxies:list):
+        self.proxies = proxies
+
+    @persistence_decorator
     def set_scraped(self, scraped):
         self.interaction.scraped = scraped
 
     @persistence_decorator
-    def set_followed(self, followed):
-        self.interaction.followed = followed
+    def set_messaged(self, messaged):
+        self.interaction.messaged = messaged
 
     @persistence_decorator
     def set_failed(self, failed):
         self.interaction.failed = failed
 
-    @persistence_decorator
-    def set_liked(self, liked):
-        self.interaction.liked = liked
-
-    @persistence_decorator
-    def set_commented(self, commented):
-        self.interaction.commented = commented
-
-    @persistence_decorator
-    def add_followed(self, username):
-        if not self.interaction.followed:
-            self.interaction.followed = list()
-        self.interaction.followed.append(username)
 
     @persistence_decorator
     def add_failed(self, failed):
@@ -80,14 +83,14 @@ class FollowSession(InstaSession):
             self.interaction.failed = list()
         self.interaction.failed.append(failed)
 
-    @persistence_decorator
-    def add_commented(self, commented):
-        if not self.interaction.commented:
-            self.interaction.commented = list()
-        self.interaction.commented.append(commented)
 
     @persistence_decorator
-    def add_liked(self, liked):
-        if not self.interaction.liked:
-            self.interaction.liked = list()
-        self.interaction.liked.append(liked)
+    def add_messaged(self, messaged):
+        if not self.interaction.messaged:
+            self.interaction.messaged = list()
+        self.interaction.messaged.append(messaged)
+
+
+    def save_scraped(self):
+        if self.interaction:
+            config.set_scraped(self.interaction)

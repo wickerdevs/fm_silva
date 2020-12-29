@@ -1,4 +1,4 @@
-from fmsilva.config import config
+from fmsilva.modules import config
 import telegram.bot
 from fmsilva import *
 from telegram.ext import messagequeue as mq 

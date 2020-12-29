@@ -1,13 +1,11 @@
 from functools import wraps
-import logging
-
+from telegram import update
 from telegram.parsemode import ParseMode
 from fmsilva.models.interaction import Interaction
-from sys import exc_info
 from fmsilva.models.settings import Settings
 from fmsilva.models.setting import Setting
-from fmsilva.models.followsession import FollowSession
-from fmsilva.config import config
+from fmsilva.models.interactsession import InteractSession
+from fmsilva.modules import config
 from fmsilva.texts import *
 from typing import List, Optional, Tuple
 from fmsilva import CONFIG_DIR, CONFIG_FOLDER
@@ -15,8 +13,8 @@ from instaclient.client.instaclient import InstaClient
 from instaclient.errors.common import FollowRequestSentError, InvaildPasswordError, InvalidUserError, PrivateAccountError, SuspisciousLoginAttemptError, VerificationCodeNecessary
 from instaclient.instagram.post import Post
 from fmsilva.models.instasession import InstaSession
-from fmsilva import applogger
-import os, multiprocessing
+from fmsilva import applogger, queue
+import os, multiprocessing, logging
 
 instalogger = logging.getLogger('instaclient')
 
@@ -39,7 +37,7 @@ def insta_error_callback(driver):
         bot.send_photo(chat_id=dev, photo=open('{}.png'.format('error'), 'rb'), caption='There was an error with the bot. Check logs')
 
     
-def update_message(obj: FollowSession, text:str):
+def update_message(obj: InteractSession, text:str):
     """
     process_update_callback sends an update message to the user, to inform of the status of the current process. This method can be used as a callback in another method.
 
@@ -63,7 +61,6 @@ def update_message(obj: FollowSession, text:str):
     return   
 
 
-
 def init_client():
     if os.environ.get('PORT') in (None, ""):
         client = InstaClient(driver_path=f'{CONFIG_FOLDER}chromedriver.exe', debug=True, error_callback=insta_error_callback, logger=instalogger, localhost_headless=True)
@@ -74,8 +71,8 @@ def init_client():
 
 def error_proof(func):
     @wraps(func)
-    def wrapper(session:FollowSession):
-        result:Tuple[bool, FollowSession] = func(session)
+    def wrapper(session:InteractSession):
+        result:Tuple[bool, InteractSession] = func(session)
         if result[1]:
             settings:Settings = config.get_settings(session.user_id)
             settings.add_interaction(result[1].interaction)
@@ -83,13 +80,63 @@ def error_proof(func):
     return wrapper
 
 
+def scrape_callback(scraped:List[str], session:InteractSession):
+    session.set_scraped(scraped)
+    session.save_scraped()
+    update_message(session, scrape_followers_callback_text.format(len(scraped)))
+
+
+def enqueue_scrape(session:InteractSession):
+    queue.add_task(scrape_job, session=session)
+
+
 @error_proof
-def enqueue_interaction(session:FollowSession) -> Tuple[bool, Optional[FollowSession]]:
-    applogger.debug(session)
+def scrape_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]]:
+    client = init_client()
+
+    update_message(session, logging_in_text)
+    try:
+        client.login(session.username, session.password)
+    except (InvalidUserError, InvaildPasswordError):
+        client.disconnect()
+        return (False, None)
+    except VerificationCodeNecessary:
+        client.disconnect()
+        return (False, None)
+
+    update_message(session, waiting_scrape_text)
+    try:
+        followers = client.get_followers(session.target, session.count)
+        session.set_scraped(followers)
+        session.save_scraped()
+        client.disconnect()
+        return (True, session)
+    except Exception as error:
+        applogger.error(f'Error in scraping <{session.target}>\'s followers: ', exc_info=error)
+        client.disconnect()
+        update_message(session, operation_error_text.format(len(session.get_followed())))
+        return (False, None)
+
+
+def enqueue_dm(session:InteractSession):
+    update_message(session, 'ENQUEING DMs')
+
+
+@error_proof
+def interaction_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]]:
     settings:Settings = config.get_settings(session.user_id)
-    applogger.debug(settings)
     setting:Setting = settings.get_setting(session.username)
-    applogger.debug(setting)
+
+    # TODO: Scrape Users
+    if not session.get_scraped():
+        result = scrape_job(session)
+        if result[1]:
+            followers = result[2].get_scraped()
+        else:
+            return (False, session)
+    else:
+        followers = session.get_scraped()
+
     client = init_client()
 
     update_message(session, logging_in_text)
@@ -102,62 +149,18 @@ def enqueue_interaction(session:FollowSession) -> Tuple[bool, Optional[FollowSes
         client.disconnect()
         return (False, None)
     
-    target = client.get_profile(session.target)
-    applogger.debug(target)
-    interaction = Interaction(target)
-    applogger.debug(interaction)
-    session.set_interaction(interaction)
-
-    # TODO: Scrape Users
-    update_message(session, waiting_scrape_text)
-    try:
-        followers = client.get_followers(session.target, session.count)
-        session.set_scraped(followers)
-    except Exception as error:
-        applogger.error(f'Error in scraping <{session.target}>\'s followers: ', exc_info=error)
-        client.disconnect()
-        update_message(session, operation_error_text.format(len(session.get_followed())))
-        return (False, None)
+    session.set_interaction(Interaction(session.target))
 
     # FOR EACH USER
     for index, follower in enumerate(followers):
-        # TODO: Follow User
-        update_message(session, followed_user_text.format(index, len(followers)))
+        # Send DM to User
+        update_message(session, )
         try:
-            client.follow(follower)
-            session.add_followed(client.get_profile(follower))
-        except FollowRequestSentError as error:
-            pass
+            client.send_dm(follower, session.get_text())
+            session.add_messaged(follower)
         except Exception as error:
-            applogger.error(f'Error in following <{follower}>\'s followers: ', exc_info=error)
-            client.disconnect()
-            update_message(session, operation_error_text.format(len(session.get_followed())))
-            return (False, session)
+            applogger.error(f'Error in sending message to <{follower}>', exc_info=error)
 
-        # TODO: Get first 2 posts
-        comments = 0
-        try:
-            try:
-                posts:List[Post] = client.get_user_posts(follower, 2)
-                for post in posts:
-                    try:
-                        post.like()
-                        session.add_liked(post)
-                        if comments < 1:
-                            post.add_comment(setting.comment)
-                            session.add_commented(post)
-                            comments += 1
-                    except Exception as error:
-                        applogger.error(f'Error in sending like/comment to <{follower}>: ', exc_info=error)
-                        pass
-            except (PrivateAccountError, InvalidUserError):
-                pass
-        except Exception as error:
-            applogger.error(f'Error in interacting: ', exc_info=error)
-            client.disconnect()
-            update_message(session, operation_error_text.format(len(session.get_followed())))
-            return (False, session)
-        
     update_message(session, follow_successful_text.format(len(session.get_followed())))
     client.disconnect()
     return (True, session)

@@ -5,7 +5,7 @@ from typing import Dict, List, TYPE_CHECKING
 from fmsilva.models.setting import Setting
 import jsonpickle, json
 from fmsilva.models.persistence import Persistence, persistence_decorator
-from fmsilva.config import config
+from fmsilva.modules import config
 import datetime
     
 

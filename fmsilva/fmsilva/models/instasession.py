@@ -1,5 +1,5 @@
 from fmsilva.models.persistence import persistence_decorator
-from fmsilva.config import config
+from fmsilva.modules import config
 from fmsilva.bot.commands import *
 from fmsilva import *
 import os
