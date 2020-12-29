@@ -86,7 +86,9 @@ def select_scrape_account(update, context):
         return InteractStates.SCRAPEACCOUNT
 
     session.set_target(username)
+    session.set_interaction(Interaction(username))
     markup = CreateMarkup({
+        5: '5',
         25: '25',
         50: '50',
         100: '100',
@@ -94,6 +96,7 @@ def select_scrape_account(update, context):
         Callbacks.CANCEL: 'Cancel'
     }).create_markup()
     send_message(update, context, select_count_text, markup)
+    return InteractStates.COUNT
 
 
 def select_count(update, context):
@@ -123,9 +126,26 @@ def input_message(update, context):
     session.set_text(text)
     update.message.delete()
 
-    markup = CreateMarkup({Callbacks.CANCEL: 'Cancel'}).create_markup()
+    markup = CreateMarkup({f'{Callbacks.SKIP}:{InteractStates.INPUTPROXIES}': 'Skip', Callbacks.CANCEL: 'Cancel'}).create_markup()
     send_message(update, context, input_accounts_text, markup)
     return InteractStates.INPUTACCOUNTS
+
+
+def skip(update, context):
+    session:InteractSession = InteractSession.deserialize(InteractSession.INTERACT, update)
+    if not session: 
+        return
+
+    data = update.callback_query.data
+    print(f'Skipping: {data}')
+    if str(InteractStates.INPUTPROXIES) in data:
+        markup = CreateMarkup({Callbacks.SKIP: 'Skip', Callbacks.CANCEL: 'Cancel'}).create_markup()
+        send_message(update, context, input_proxies_text, markup)
+        return InteractStates.INPUTPROXIES
+    else:
+        markup = CreateMarkup({Callbacks.CONFIRM: 'Confirm', Callbacks.CANCEL: 'Cancel'}).create_markup()
+        send_message(update, context, confirm_dms_text.format(session.count), markup)
+        return InteractStates.CONFIRM
     
 
 def input_accounts(update:Update, context:CallbackContext):
@@ -146,7 +166,7 @@ def input_accounts(update:Update, context:CallbackContext):
 
         session.set_accounts(accounts)
     
-    markup = CreateMarkup({Callbacks.CANCEL: 'Cancel'}).create_markup()
+    markup = CreateMarkup({f'{Callbacks.SKIP}:{InteractStates.CONFIRM}': 'Skip', Callbacks.CANCEL: 'Cancel'}).create_markup()
     send_message(update, context, input_proxies_text, markup)
     return InteractStates.INPUTPROXIES
 
@@ -178,6 +198,7 @@ def confirm_dms(update, context):
     update.callback_query.answer()
     if data == Callbacks.CONFIRM:
         instagram.enqueue_dm(session)
+        session.discard()
         return ConversationHandler.END
     else:
         return cancel_send_dm(update, context, session)

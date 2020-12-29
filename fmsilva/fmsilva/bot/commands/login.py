@@ -126,6 +126,9 @@ def instagram_password(update, context):
     markup = CreateMarkup({Callbacks.CANCEL: 'Cancel'}).create_markup()
     send_message(update, context, login_successful_text, markup)
     return StartStates.TEXT """
+    settings.save()
+    settings.discard()
+    instasession.discard()
     markup = CreateMarkup({Callbacks.HELP: 'What can I do?'}).create_markup()
     send_message(update, context, end.format(instasession.username), markup)
     return ConversationHandler.END

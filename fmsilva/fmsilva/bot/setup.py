@@ -39,7 +39,7 @@ def setup(updater):
             InteractStates.INPUTPROXIES: [MessageHandler(Filters.document, input_proxies)],
             InteractStates.CONFIRM: [CallbackQueryHandler(confirm_dms)],
         },
-        fallbacks=[CallbackQueryHandler(cancel_send_dm, pattern=Callbacks.CANCEL)]
+        fallbacks=[CallbackQueryHandler(cancel_send_dm, pattern=Callbacks.CANCEL), CallbackQueryHandler(skip, pattern=Callbacks.SKIP)]
     )
 
 

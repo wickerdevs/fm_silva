@@ -114,12 +114,14 @@ def scrape_job(session:InteractSession) -> Tuple[bool, Optional[InteractSession]
     except Exception as error:
         applogger.error(f'Error in scraping <{session.target}>\'s followers: ', exc_info=error)
         client.disconnect()
-        update_message(session, operation_error_text.format(len(session.get_followed())))
+        update_message(session, operation_error_text.format(len(session.get_scraped())))
         return (False, None)
 
 
 def enqueue_dm(session:InteractSession):
-    update_message(session, 'ENQUEING DMs')
+    update_message(session, 'Enqueuing DMs...')
+    result = interaction_job(session)
+
 
 
 @error_proof
@@ -137,8 +139,9 @@ def interaction_job(session:InteractSession) -> Tuple[bool, Optional[InteractSes
     else:
         followers = session.get_scraped()
 
-    client = init_client()
 
+
+    client = init_client()
     update_message(session, logging_in_text)
     try:
         client.login(session.username, session.password)
@@ -154,14 +157,14 @@ def interaction_job(session:InteractSession) -> Tuple[bool, Optional[InteractSes
     # FOR EACH USER
     for index, follower in enumerate(followers):
         # Send DM to User
-        update_message(session, )
+        update_message(session, inform_messages_status_text.format(len(followers), index))
         try:
             client.send_dm(follower, session.get_text())
             session.add_messaged(follower)
         except Exception as error:
             applogger.error(f'Error in sending message to <{follower}>', exc_info=error)
 
-    update_message(session, follow_successful_text.format(len(session.get_followed())))
+    update_message(session, follow_successful_text.format(len(session.get_messaged())))
     client.disconnect()
     return (True, session)
 

@@ -25,6 +25,9 @@ class InteractSession(InstaSession):
     def get_count(self):
         return self.count
 
+    def get_text(self):
+        return self.text
+
     def get_scraped(self):
         if not self.interaction.scraped:
             return list()

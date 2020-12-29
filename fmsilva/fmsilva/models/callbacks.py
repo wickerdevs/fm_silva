@@ -11,6 +11,7 @@ class Callbacks:
 
 
     # BUTTON CALLBACKS
+    SKIP = 'SKIP'
     SELECTSWITCH = 'SELECTSWITCH'
     CANCEL = 'CANCEL'
     NONE = 'NONE'
