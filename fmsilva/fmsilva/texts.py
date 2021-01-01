@@ -52,6 +52,7 @@ cancelled_instagram_text = 'Instagram log in procedure has been cancelled.'
 # INSTAGRAM LOG OUT COMMAND
 logging_out = 'Logging out of instagram...'
 instagram_loggedout_text = 'Instagram log out successful! To log in again, use /login'
+not_logged_in_logout_text = 'You are not currently logged in with any instagram account. Use /login to log into instagram.'
 error_loggingout_text = 'There was an error when trying to log out of instagram... Try again later or contact a developer.'
 
 
